@@ -1,79 +1,41 @@
-import json
 import logging
-import os
 import sys
-import urllib2
 
-from oauth import oauth
+import streamer
 
 
 STREAM_URL = "https://userstream.twitter.com/2/user.json"
 
 
-def open_stream(params=None):
-    params = params or {}
-
-    consumer_token = oauth.OAuthToken(
-        os.environ['CONSUMER_KEY'],
-        os.environ['CONSUMER_SECRET'])
-
-    access_token = oauth.OAuthToken(
-        os.environ['ACCESS_TOKEN_KEY'],
-        os.environ['ACCESS_TOKEN_SECRET'])
-
-    oauth_request = oauth.OAuthRequest.from_consumer_and_token(
-        consumer_token,
-        access_token,
-        http_method='GET',
-        http_url=STREAM_URL,
-        parameters=params)
-
-    oauth_request.sign_request(
-        oauth.OAuthSignatureMethod_HMAC_SHA1(),
-        consumer_token,
-        access_token)
-
-    url = oauth_request.to_url()
-    logging.debug('Connecting to %s', url)
-    return urllib2.urlopen(url)
-
-
-def process_stream(stream, message_callback):
-    while True:
-        length = int(stream.readline())
-        message_bytes = stream.read(length)
-        try:
-            message = json.loads(message_bytes)
-        except json.JSONDecodeError, e:
-            logging.error('Invalid JSON: %s: %r', e, message_bytes)
-        else:
-            message_callback(message)
+TWEET_COUNT = 0
+LINK_COUNT = 0
+OTHER_COUNT = 0
 
 
 def handle_message(message):
-    if 'text' in message and 'user' in message:
-        screen_name = message['user']['screen_name']
-        user_id = message['user']['id']
-        text = message['text']
-        print '@%s (%s): %s' % (screen_name, user_id, text)
-        print
+    global TWEET_COUNT, LINK_COUNT, OTHER_COUNT
+    if 'text' in message:
+        TWEET_COUNT += 1
+        if message['entities']:
+            logging.info('Found entities: %r', message['entities'])
+            LINK_COUNT += 1
     else:
+        OTHER_COUNT += 1
         logging.debug('Skipping message: %r', message)
     return True
 
 
 def main():
-    stream = open_stream({
-        'delimited': 'length',
+    params = {
         'replies': 'all',
-    })
-    try:
-        process_stream(stream, handle_message)
-    except KeyboardInterrupt:
-        logging.info('Exiting...')
-    except Exception, e:
-        logging.exception('Uncaught exception: %s', e)
-        return 1
+    }
+    for i, message in enumerate(streamer.iter_stream(STREAM_URL, params)):
+        handle_message(message)
+        if i % 50 == 0:
+            logging.info('Processed %d messages', i)
+            logging.info(
+                'Counts: %05d/%05d/%05d',
+                TWEET_COUNT, LINK_COUNT, OTHER_COUNT)
     return 0
 
 
