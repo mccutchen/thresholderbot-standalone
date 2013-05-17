@@ -52,8 +52,11 @@ def open_stream(stream_url, params=None):
 
 def process_stream(stream):
     while True:
-        length = int(stream.readline())
-        message_bytes = stream.read(length)
+        length_bytes = stream.readline().strip()
+        if not length_bytes.isdigit():
+            logging.warn('Invalid length: %r', length_bytes)
+            continue
+        message_bytes = stream.read(int(length_bytes))
         try:
             message = json.loads(message_bytes)
         except json.JSONDecodeError, e:
