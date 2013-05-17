@@ -20,6 +20,9 @@ def handle_message(message):
                     canonical_url = urlwork.canonicalize(url)
                 except requests.TooManyRedirects:
                     logging.error('Too many redirects: %s', url)
+                except Exception, e:
+                    logging.exception('Uncaught exception: %s', e)
+                    logging.error('url info: %r', url_info)
                 else:
                     if canonical_url != url:
                         logging.info(' => %s', canonical_url)

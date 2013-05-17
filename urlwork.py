@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-
 import cgi
-import logging
 import urllib
 import urlparse
 
@@ -24,11 +21,12 @@ def canonicalize(url):
     TODO: Special case normalization for major sites (e.g. youtube)?
     """
     url = urlnorm.norm(resolve(url))
-    scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
+    url_parts = urlparse.urlsplit(url)
+    scheme, netloc, path, query, fragment = url_parts
 
     params = []
     for key, value in cgi.parse_qs(query).iteritems():
-        if exclude_param(url, key, value):
+        if exclude_param(url_parts, key, value):
             continue
         if isinstance(value, list):
             params.extend((key, v) for v in value)
@@ -39,10 +37,12 @@ def canonicalize(url):
     return urlparse.urlunsplit((scheme, netloc, path, query, ''))
 
 
-def exclude_param(url, key, value):
+def exclude_param(url_parts, key, value):
     """Returns True if the given query parameter should be excluded from the
     canonicalized version of a URL.
     """
+    if url_parts.netloc.endswith('youtube.com'):
+        return key in ('v', 'p')
     return key.startswith('utm_')
 
 
@@ -55,6 +55,7 @@ def resolve(url, depth=0):
         return resolve(resp.headers['Location'], depth + 1)
     else:
         return url
+
 
 if __name__ == '__main__':
     import fileinput
