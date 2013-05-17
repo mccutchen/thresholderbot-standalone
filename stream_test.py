@@ -7,35 +7,35 @@ import streamer
 STREAM_URL = "https://userstream.twitter.com/2/user.json"
 
 
-TWEET_COUNT = 0
-LINK_COUNT = 0
-OTHER_COUNT = 0
-
-
 def handle_message(message):
-    global TWEET_COUNT, LINK_COUNT, OTHER_COUNT
     if 'text' in message:
-        TWEET_COUNT += 1
         if message['entities']:
-            logging.info('Found entities: %r', message['entities'])
-            LINK_COUNT += 1
+            for url_info in message['entities']['urls']:
+                url = url_info['expanded_url']
+                logging.info('Found URL: %s', url)
+                print ' '.join((
+                    message['user']['screen_name'],
+                    str(message['user']['id']),
+                    url))
+                sys.stdout.flush()
     else:
-        OTHER_COUNT += 1
         logging.debug('Skipping message: %r', message)
-    return True
 
 
 def main():
     params = {
         'replies': 'all',
     }
-    for i, message in enumerate(streamer.iter_stream(STREAM_URL, params)):
-        handle_message(message)
-        if i % 50 == 0:
-            logging.info('Processed %d messages', i)
-            logging.info(
-                'Counts: %05d/%05d/%05d',
-                TWEET_COUNT, LINK_COUNT, OTHER_COUNT)
+    try:
+        for i, message in enumerate(streamer.iter_stream(STREAM_URL, params)):
+            handle_message(message)
+            if i and i % 20 == 0:
+                logging.info('Processed %d messages', i)
+    except KeyboardInterrupt:
+        logging.info('Bye bye!')
+    except Exception, e:
+        logging.exception('Uncaught exception: %s', e)
+        return 1
     return 0
 
 
