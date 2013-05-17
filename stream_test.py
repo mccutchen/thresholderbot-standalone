@@ -1,7 +1,10 @@
 import logging
 import sys
 
+import requests
+
 import streamer
+import urlwork
 
 
 STREAM_URL = "https://userstream.twitter.com/2/user.json"
@@ -13,11 +16,18 @@ def handle_message(message):
             for url_info in message['entities']['urls']:
                 url = url_info['expanded_url']
                 logging.info('Found URL: %s', url)
-                print ' '.join((
-                    message['user']['screen_name'],
-                    str(message['user']['id']),
-                    url))
-                sys.stdout.flush()
+                try:
+                    canonical_url = urlwork.canonicalize(url)
+                except requests.TooManyRedirects:
+                    logging.error('Too many redirects: %s', url)
+                else:
+                    if canonical_url != url:
+                        logging.info(' => %s', canonical_url)
+                    print ' '.join((
+                        message['user']['screen_name'],
+                        str(message['user']['id']),
+                        canonical_url))
+                    sys.stdout.flush()
     else:
         logging.debug('Skipping message: %r', message)
 
@@ -40,5 +50,5 @@ def main():
 
 
 if __name__ == '__main__':
-    logging.getLogger().setLevel(level=logging.DEBUG)
+    logging.getLogger().setLevel(level=logging.INFO)
     sys.exit(main())
