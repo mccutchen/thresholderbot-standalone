@@ -42,7 +42,7 @@ def exclude_param(url_parts, key, value):
     canonicalized version of a URL.
     """
     if url_parts.netloc.endswith('youtube.com'):
-        return key in ('v', 'p')
+        return key not in ('v', 'p')
     return key.startswith('utm_')
 
 
@@ -51,8 +51,17 @@ def resolve(url, depth=0):
     if depth > 10:
         raise requests.TooManyRedirects()
     resp = requests.head(url)
-    if 'Location' in resp.headers and resp.headers['Location'] != url:
-        return resolve(resp.headers['Location'], depth + 1)
+    next = resp.headers.get('Location')
+    if next and next != url:
+        # Flickr (and maybe other) URLs end up resolving to a relative path:
+        #  1. http://flic.kr/p/ekDbXt
+        #  2. http://www.flickr.com/photo.gne?short=ekDbXt
+        #  3. /photos/raganwald/8754907409/
+        # So let's make sure we're always returning a full URL.
+        if next.startswith('/'):
+            scheme, netloc, _, _, _ = urlparse.urlsplit(url)
+            next = scheme + netloc + next
+        return resolve(next, depth + 1)
     else:
         return url
 
