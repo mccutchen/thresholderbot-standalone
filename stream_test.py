@@ -3,6 +3,7 @@ import sys
 
 import requests
 
+import db
 import streamer
 import urlwork
 
@@ -26,13 +27,11 @@ def handle_message(message):
                 else:
                     if canonical_url != url:
                         logging.info(' => %s', canonical_url)
-                    print ' '.join((
-                        message['user']['screen_name'],
-                        str(message['user']['id']),
-                        canonical_url))
-                    sys.stdout.flush()
+                    source_url = 'https://twitter.com/%s/status/%s' % (
+                        message['user']['screen_name'], message['id'])
+                    db.add(canonical_url, source_url)
     else:
-        logging.debug('Skipping message: %r', message)
+        logging.warn('Skipping message: %r', message)
 
 
 def main():
