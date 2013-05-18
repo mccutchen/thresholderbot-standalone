@@ -56,8 +56,11 @@ class DB(object):
                 logging.info('Connectiong to local mongodb')
                 conn = pymongo.MongoClient()
                 db = conn['thresholder']
-            # Ensure our 10mb capped collection is in place
-            db.create_collection('thresholder', capped=True, size=10485760)
+
+            if 'thresholder' not in db.collection_names():
+                # Ensure our 10mb capped collection is in place
+                db.create_collection(
+                    'thresholder', capped=True, size=10 * 1024 * 1024)
             self._db = db
         return self._db
 
