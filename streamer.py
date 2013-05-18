@@ -44,10 +44,17 @@ def open_stream(stream_url, params=None):
     oauth_request = prepare_request(stream_url, default_params)
     url = oauth_request.to_url()
     logging.debug('Connecting to %s', url)
-    handle = urllib2.urlopen(url)
-    yield handle
-    logging.debug('Closing connection...')
-    handle.close()
+    try:
+        handle = urllib2.urlopen(url)
+    except urllib2.HTTPError, e:
+        logging.error('Error connecting to %s', url)
+        logging.error('%s %s', e.code, e.reason)
+        logging.error('Body: %r', e.read())
+        raise
+    else:
+        yield handle
+        logging.info('Closing connection...')
+        handle.close()
 
 
 def process_stream(stream):

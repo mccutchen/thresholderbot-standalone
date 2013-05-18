@@ -52,5 +52,4 @@ def main():
 
 
 if __name__ == '__main__':
-    logging.getLogger().setLevel(level=logging.INFO)
     sys.exit(main())
