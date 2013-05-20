@@ -3,9 +3,9 @@ import sys
 
 import requests
 
-import db
-import streamer
-import urlwork
+from lib import db
+from lib import streamer
+from lib import urlwork
 
 
 STREAM_URL = "https://userstream.twitter.com/2/user.json"
