@@ -60,7 +60,7 @@ def resolve(url, depth=0):
         # So let's make sure we're always returning a full URL.
         if next.startswith('/'):
             scheme, netloc, _, _, _ = urlparse.urlsplit(url)
-            next = scheme + netloc + next
+            next = scheme + '://' + netloc + next
         return resolve(next, depth + 1)
     else:
         return url
