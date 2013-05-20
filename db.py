@@ -37,7 +37,26 @@ def aggregate(threshold):
     threshold times.
     """
     assert isinstance(threshold, int)
-    pass
+    results = DB.thresholder.aggregate([
+        {
+            '$group': {
+                '_id': '$url',
+                'source_urls': {
+                    '$push': '$src',
+                },
+                'count': {
+                    '$sum': 1
+                },
+            },
+        },
+        { '$match': { 'count': { '$gte': threshold } } },
+        { '$sort': { 'count': -1 } },
+    ])
+    return [{
+        'url': rec['_id'],
+        'count': rec['count'],
+        'source_urls': rec['source_urls']
+    } for rec in results['result']]
 
 
 class DB(object):
