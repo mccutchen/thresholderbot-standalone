@@ -35,9 +35,7 @@ def handle_message(message):
 
 
 def main():
-    params = {
-        'replies': 'all',
-    }
+    params = {}
     try:
         for i, message in enumerate(streamer.iter_stream(STREAM_URL, params)):
             handle_message(message)
