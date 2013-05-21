@@ -36,7 +36,7 @@ def handle_message_with_entities(message):
             logging.error('URL info: %r', url_info)
         else:
             if canonical_url != url:
-                logging.info(' => %s', canonical_url)
+                logging.info('=> %s', canonical_url)
             db.add(canonical_url, make_tweet_url(message))
 
 
@@ -63,4 +63,8 @@ def main():
 
 
 if __name__ == '__main__':
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(levelname)s %(filename)s:%(lineno)d: %(message)s')
+    logging.getLogger('requests').setLevel(logging.WARN)
     sys.exit(main())
