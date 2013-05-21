@@ -1,10 +1,18 @@
 import cgi
+import re
 import sys
 import urllib
 import urlparse
 
 import requests
 import urlnorm
+
+
+# We will strip any params that match these patterns
+EXCLUDE_PARAM_PATTERNS = [
+    r'^utm_',
+    r'^ex_cid$', # seen on grantland.com URLs
+]
 
 
 def canonicalize(url):
@@ -44,7 +52,7 @@ def exclude_param(url_parts, key, value):
     """
     if url_parts.netloc.endswith('youtube.com'):
         return key not in ('v', 'p')
-    return key.startswith('utm_')
+    return any(re.match(pattern, key) for pattern in EXCLUDE_PARAM_PATTERNS)
 
 
 def resolve(url):
