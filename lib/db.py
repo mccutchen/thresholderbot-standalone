@@ -19,17 +19,23 @@ from lib import log
 
 def add(url, source_url):
     """Add a URL to the datastore."""
-    return DB.thresholder.insert({
+    return DB.urls.insert({
         'url': url,
         'src': source_url,
-    })
+        'seen': 0,
+    }, safe=True)
 
 
-def remove(url):
-    """Remove any records matching the given URL from the datastore."""
-    return DB.thresholder.remove({
+def mark_seen(url):
+    """Mark any records matching the given URL as seen."""
+    query = {
         'url': url,
-    })
+        'seen': 0,
+    }
+    update = {
+        '$set': { 'seen': 1, },
+    }
+    return DB.urls.update(query, update, safe=True)
 
 
 def aggregate(threshold):
@@ -37,7 +43,11 @@ def aggregate(threshold):
     threshold times.
     """
     assert isinstance(threshold, int)
-    results = DB.thresholder.aggregate([
+
+    results = DB.urls.aggregate([
+        # only match unseen documents
+        { '$match': { 'seen': 0 } },
+        # group by URL, aggregating source URLs and counting occurrences
         {
             '$group': {
                 '_id': '$url',
@@ -49,9 +59,13 @@ def aggregate(threshold):
                 },
             },
         },
+        # only include aggregated docs with a count over the given threshold
         { '$match': { 'count': { '$gte': threshold } } },
+        # sort by how many occurrences there were
         { '$sort': { 'count': -1 } },
     ])
+
+    # Reshape the data for our uses
     return [{
         'url': rec['_id'],
         'count': rec['count'],
@@ -76,10 +90,9 @@ class DB(object):
                 conn = pymongo.MongoClient()
                 db = conn['thresholder']
 
-            if 'thresholder' not in db.collection_names():
-                # Ensure our 10mb capped collection is in place
-                db.create_collection(
-                    'thresholder', capped=True, size=10 * 1024 * 1024)
+            if 'urls' not in db.collection_names():
+                db.create_collection('urls')
+
             self._db = db
         return self._db
 
