@@ -61,7 +61,6 @@ def process_stream(stream):
     while True:
         length_bytes = stream.readline().strip()
         if not length_bytes.isdigit():
-            logging.warn('Invalid length: %r', length_bytes)
             continue
         message_bytes = stream.read(int(length_bytes))
         try:
