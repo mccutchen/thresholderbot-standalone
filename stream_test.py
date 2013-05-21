@@ -1,9 +1,9 @@
-import logging
 import sys
 
 import requests
 
 from lib import db
+from lib import log
 from lib import streamer
 from lib import urlwork
 
@@ -15,28 +15,28 @@ def handle_message(message):
     if 'text' in message and message['entities']:
         return handle_message_with_entities(message)
     elif 'friends' in message:
-        logging.info('Got %d friends on startup', len(message['friends']))
+        log.info('Got %d friends on startup', len(message['friends']))
     elif 'delete' in message:
         pass
     else:
-        logging.warn('Skipping message: %r', message)
+        log.warn('Skipping message: %r', message)
 
 
 def handle_message_with_entities(message):
     assert message['entities']
     for url_info in message['entities']['urls']:
         url = url_info['expanded_url']
-        logging.info('Found URL: %s', url)
+        log.info('Found URL: %s', url)
         try:
             canonical_url = urlwork.canonicalize(url)
         except requests.TooManyRedirects:
-            logging.error('Too many redirects: %s', url)
+            log.error('Too many redirects: %s', url)
         except Exception, e:
-            logging.exception('Canonicalization error: %s', e)
-            logging.error('URL info: %r', url_info)
+            log.exception('Canonicalization error: %s', e)
+            log.error('URL info: %r', url_info)
         else:
             if canonical_url != url:
-                logging.info('=> %s', canonical_url)
+                log.info('=> %s', canonical_url)
             db.add(canonical_url, make_tweet_url(message))
 
 
@@ -52,19 +52,15 @@ def main():
         for i, message in enumerate(streamer.iter_stream(STREAM_URL, params)):
             handle_message(message)
             if i and i % 20 == 0:
-                logging.info('Processed %d messages', i)
+                log.info('Processed %d messages', i)
     except KeyboardInterrupt:
-        logging.info('Bye bye!')
+        log.info('Bye bye!')
     except Exception, e:
-        logging.exception('Error handling message: %s', e)
-        logging.warn('Exiting...')
+        log.exception('Error handling message: %s', e)
+        log.warn('Exiting...')
         return 1
     return 0
 
 
 if __name__ == '__main__':
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(levelname)s %(filename)s:%(lineno)d: %(message)s')
-    logging.getLogger('requests').setLevel(logging.WARN)
     sys.exit(main())

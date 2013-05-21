@@ -10,11 +10,11 @@ This module provides a dead-simple interface for inserting/updating records
 and for fetching records over a certain threshold.
 """
 
-import logging
 import os
 import urlparse
 
 import pymongo
+from lib import log
 
 
 def add(url, source_url):
@@ -68,11 +68,11 @@ class DB(object):
         if self._db is None:
             mongo_url = os.environ.get('MONGOHQ_URL')
             if mongo_url:
-                logging.info('Connecting to mongodb: %s', mongo_url)
+                log.info('Connecting to mongodb: %s', mongo_url)
                 conn = pymongo.MongoClient(mongo_url)
                 db = conn[urlparse.urlparse(mongo_url).path[1:]]
             else:
-                logging.info('Connectiong to local mongodb')
+                log.info('Connecting to local mongodb...')
                 conn = pymongo.MongoClient()
                 db = conn['thresholder']
 
