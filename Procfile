@@ -1,1 +1,1 @@
-watcher: python thresholder.py
+thresholder: python thresholder.py

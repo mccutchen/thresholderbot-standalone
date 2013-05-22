@@ -42,5 +42,5 @@ heroku addons:open scheduler
 
 # deploy and scale up to one process
 git push heroku master
-heroku ps:scale watcher=1
+heroku ps:scale thresholder=1
 ```
