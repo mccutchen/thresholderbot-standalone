@@ -1,1 +1,1 @@
-watcher: python stream_test.py
+watcher: python thresholder.py
