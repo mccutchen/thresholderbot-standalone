@@ -3,7 +3,8 @@ Records are stored in mongodb in the following format:
 
     {
         'url': <url>,
-        'source': <source_url>,
+        'src': <source_url>,
+        'seen': <0 or 1>,
     }
 
 This module provides a dead-simple interface for inserting/updating records
@@ -23,7 +24,7 @@ def add(url, source_url):
         'url': url,
         'src': source_url,
         'seen': 0,
-    }, safe=True)
+    })
 
 
 def mark_seen(url):
@@ -35,7 +36,7 @@ def mark_seen(url):
     update = {
         '$set': { 'seen': 1, },
     }
-    return DB.urls.update(query, update, safe=True)
+    return DB.urls.update(query, update, multi=True)
 
 
 def aggregate(threshold):
