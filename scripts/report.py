@@ -12,8 +12,8 @@ from lib import log
 
 template = """Hi!
 
-These {{count}} URLs were shared at least {{threshold}} times in the past
-{{window}}. I hope you find something cool or interesting!
+These {{count}} URLs were shared at least {{threshold}} times by the accounts
+you follow on Twitter. I hope you find something cool or interesting!
 
 {{#links}}
     {{url}}{{#sources}}
@@ -30,7 +30,6 @@ Your friendly neighborhood Twitter Link Robot Thingy
 def send_mail(records, threshold, dry_run):
     ctx = {
         'count': len(records),
-        'window': 'hour',
         'threshold': threshold,
         'links': [{
             'url': rec['url'],
