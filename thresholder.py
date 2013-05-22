@@ -49,9 +49,8 @@ def make_tweet_url(message):
 
 
 def main():
-    params = {}
     try:
-        for i, message in enumerate(streamer.iter_stream(STREAM_URL, params)):
+        for i, message in enumerate(streamer.iter_stream(STREAM_URL)):
             handle_message(message)
             if i and i % 20 == 0:
                 log.info('Processed %d messages', i)
