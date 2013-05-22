@@ -1,4 +1,5 @@
 oauth==1.0.1
 pymongo==2.5.1
+pystache==0.5.3
 requests==1.2.0
 urlnorm==1.1.2
