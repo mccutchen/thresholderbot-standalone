@@ -3,8 +3,8 @@
 import os
 import sys
 
+import mandrill
 import pystache
-import requests
 
 from lib import db
 from lib import log
@@ -38,27 +38,21 @@ def send_mail(records, threshold, dry_run):
     }
     body = pystache.render(template, ctx)
 
-    api_key = os.environ['MAILGUN_API_KEY']
-    mailgun_domain = os.environ['MAILGUN_DOMAIN']
-    api_url = 'https://api:{}@api.mailgun.net/v2/{}'.format(
-        api_key, mailgun_domain)
-
-    params = {
-        'from': 'thresholder@{}'.format(mailgun_domain),
-        'to': os.environ['TO_ADDRESS'],
-        'subject': 'Links from your Twitter Thresholder',
-        'text': body,
-    }
-
     if dry_run:
         print body
         return False
 
-    resp = requests.post(api_url + '/messages', data=params)
-    if resp.status_code >= 400:
-        log.error(
-            'Error sending mail: HTTP %d: %r', resp.status_code, resp.json())
-    return 200 <= resp.status_code < 400
+    m = mandrill.Mandrill(os.environ['MANDRILL_APIKEY'])
+    resp = m.messages.send({
+        'from_email': os.environ['FROM_ADDRESS'],
+        'to': [{'email': os.environ['TO_ADDRESS']}],
+        'subject': 'New links from your Thresholderbot',
+        'text': body,
+    })
+    if resp[0]['status'] != 'sent':
+        log.error('Error sending mail: %r', resp)
+        return False
+    return True
 
 
 def main(dry_run):
