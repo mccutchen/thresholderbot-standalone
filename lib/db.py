@@ -89,7 +89,7 @@ class DB(object):
             else:
                 log.info('Connecting to local mongodb...')
                 conn = pymongo.MongoClient()
-                db = conn['thresholder']
+                db = conn['thresholderbot']
 
             if 'urls' not in db.collection_names():
                 db.create_collection('urls')

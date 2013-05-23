@@ -1,1 +1,1 @@
-thresholder: python thresholder.py
+thresholderbot: python thresholderbot.py

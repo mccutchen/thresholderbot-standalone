@@ -8,5 +8,5 @@ logging.basicConfig(
 logging.getLogger('requests').setLevel(logging.WARN)
 
 # We want our own logs at INFO level
-log = logging.getLogger('thresholder')
+log = logging.getLogger('thresholderbot')
 log.setLevel(logging.INFO)
