@@ -23,7 +23,7 @@ you follow on Twitter. I hope you find something cool or interesting!
 Have fun,
 
 
-Your friendly neighborhood Twitter Link Robot Thingy
+Your very own Thresholderbot
 """
 
 
