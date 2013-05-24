@@ -52,7 +52,7 @@ def main():
     try:
         for i, message in enumerate(streamer.iter_stream(STREAM_URL)):
             handle_message(message)
-            if i and i % 20 == 0:
+            if i and i % 100 == 0:
                 log.info('Processed %d messages', i)
     except KeyboardInterrupt:
         log.info('Bye bye!')
