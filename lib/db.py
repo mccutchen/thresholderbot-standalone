@@ -52,18 +52,19 @@ def add(url, source_id, source_url):
     return url_key_count
 
 
-def is_seen(url):
+def was_sent(url):
     """Returns a bool indicating whether a notification for the url has been
     sent out.
     """
-    return DB.get('seen:' + sha1_hash(url)) is not None
+    return DB.get('sent:' + sha1_hash(url)) is not None
 
 
-def mark_seen(url):
+def mark_sent(url):
     """Add a tombstone key for the url to indicate that a notification has
     been sent.
     """
-    return DB.set('seen:' + sha1_hash(url), 1)
+    ttl = 60 * 60 * 24 * 7
+    return DB.setex('sent:' + sha1_hash(url), 1, ttl)
 
 
 def get_source_urls(url):

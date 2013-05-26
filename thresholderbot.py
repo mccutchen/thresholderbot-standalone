@@ -54,10 +54,10 @@ def handle_message_with_entities(message):
 
 
 def handle_thresholded_url(url):
-    if not db.is_seen(url):
+    if not db.was_sent(url):
         sources = db.get_source_urls(url)
         if notifications.send_mail(url, sources):
-            db.mark_seen(url)
+            db.mark_sent(url)
     else:
         log.warn('Skipping already-seen URL %s', url)
 
