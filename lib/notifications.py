@@ -24,10 +24,11 @@ def send_mail(url, sources, dry_run=False):
         } for source_url, ts in sources],
     }
     ctx['sources'][-1]['last'] = 1 # for prettier emails
-    log.warn('Context: %r', ctx)
+
     with open('resources/email.html.mustache') as f:
         template = f.read()
-        body = pystache.render(template, ctx)
+
+    body = pystache.render(template, ctx)
 
     if dry_run:
         log.warn('Skipping send... Email:\n%s', body)

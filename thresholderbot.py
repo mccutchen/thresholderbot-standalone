@@ -49,8 +49,6 @@ def handle_message_with_entities(message):
             if count >= int(os.environ.get('THRESHOLD', 5)):
                 log.info('URL %s seen %d times!', canonical_url, count)
                 handle_thresholded_url(canonical_url)
-            else:
-                log.info('URL %s seen %d times', canonical_url, count)
 
 
 def handle_thresholded_url(url):
