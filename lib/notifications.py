@@ -24,7 +24,7 @@ def send_mail(url, sources, dry_run=False):
         } for source_url, ts in sources],
     }
     log.warn('Context: %r', ctx)
-    with open('resources/email.compiled.html.mustache') as f:
+    with open('resources/email.html.mustache') as f:
         template = f.read()
         body = pystache.render(template, ctx)
 
@@ -40,6 +40,7 @@ def send_mail(url, sources, dry_run=False):
         'to': [{'email': os.environ['TO_ADDRESS']}],
         'subject': subject,
         'html': body,
+        'inline_css': True,
         'auto_text': False,
         'track_opens': False,
         'track_clicks': False,
