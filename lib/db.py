@@ -68,14 +68,22 @@ def mark_seen(url):
 
 def get_source_urls(url):
     """Return a list of (source url, timestamp) tuples for each source of the
-    given URL.
+    given URL. This is a two-step process:
+
+     1. Fetch the members of the set of source keys (along with their scores,
+        which are timestamps) for this url
+
+     2. Fetch each of those source keys to get the source urls
+
+    There's a chance that a source key stored in a url's set of keys will have
+    been evicted, resulting in fewer than expected source URLs. At the moment,
+    we just don't worry about that problem.
     """
     url_key = 'url:' + sha1_hash(url)
     sources = DB.zrange(url_key, 0, -1, withscores=1)
-    source_keys = [key for key, _ in sources]
-    source_timestamps = [value for _, value in sources]
-    source_urls = DB.mget(*source_keys)
-    return [(src, ts) for src, ts in zip(source_urls, source_timestamps)]
+    keys, timestamps = zip(*sources)
+    urls = DB.mget(*keys)
+    return [(src, ts) for src, ts in zip(urls, timestamps) if src]
 
 
 class DB(object):
