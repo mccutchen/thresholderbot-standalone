@@ -23,6 +23,7 @@ def send_mail(url, sources, dry_run=False):
             'name': parse_source_name(source_url),
         } for source_url, ts in sources],
     }
+    ctx['sources'][-1]['last'] = 1 # for prettier emails
     log.warn('Context: %r', ctx)
     with open('resources/email.html.mustache') as f:
         template = f.read()

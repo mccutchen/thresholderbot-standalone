@@ -23,7 +23,7 @@
 
             #thresholder-content {
                 background-color: #fff;
-                padding: 1.5em;
+                padding: 0;
                 border: 2px solid #e9e2cb;
                 border-top-width: 0;
                 border-left-width: 0;
@@ -33,11 +33,14 @@
 
             h1 {
                 font-size: 2em;
-                margin: 0.5em 0;
+                margin: 0.75em;
+                margin-top: 0;
+                padding-top: 0.75em;
             }
-            h2 {
-                font-size: 1.5em;
-                margin: 0.75em 0;
+
+            #thresholder-content p {
+                padding-left: 1.5em;
+                padding-right: 1.5em;
             }
 
             a {
@@ -49,16 +52,20 @@
             }
 
             #thresholder-url {
-                background-color: #2075c7;
-                margin: 1em -1.5em;
+                padding: 0 !important;
             }
             #thresholder-url a {
+                background-color: #2075c7;
                 display: block;
                 font-size: 1.5em;
                 padding: 0.75em 1em;
                 color: #fff;
+                margin: 0;
             }
 
+            #thresholder-sources {
+                margin: auto 1.5em;
+            }
             #thresholder-sources td {
                 text-align: left;
                 vertical-align: middle;
@@ -69,13 +76,16 @@
                 color: #999;
                 font-size: 0.8em;
             }
-            #thresholder-sources tr:last-child td {
+            #thresholder-sources tr.last td {
                 border-bottom: none;
             }
 
             #thresholder-signature {
-                margin-top: 2em;
                 font-size: 1.5em;
+                padding-left: 1em !important;
+                padding-bottom: 1em !important;
+                margin-top: 2em;
+                margin-bottom: 0 !important;
                 font-weight: bold;
                 color: #bd3612;
             }
@@ -95,7 +105,7 @@
                 <p>It was shared by</p>
                 <table id="thresholder-sources" cellpadding="0" cellspacing="0">
                     {{#sources}}
-                        <tr>
+                        <tr{{#last}} class="last"{{/last}}>
                             <td><a href="{{url}}">{{name}}</a></td>
                             <td>{{timestamp}}</td>
                         </tr>
