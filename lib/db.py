@@ -70,8 +70,8 @@ def get_source_urls(url):
     """Return a list of (source url, timestamp) tuples for each source of the
     given URL.
     """
-    url_hash = sha1_hash(url)
-    sources = DB.zrange(url_hash, 0, -1, withscores=1)
+    url_key = 'url:' + sha1_hash(url)
+    sources = DB.zrange(url_key, 0, -1, withscores=1)
     source_keys = [key for key, _ in sources]
     source_timestamps = [value for _, value in sources]
     source_urls = DB.mget(*source_keys)
