@@ -32,9 +32,8 @@ Next, set up the Heroku app:
 
 ```bash
 heroku create
-heroku addons:add mongohq:sandbox
-heroku addons:add mailgun:starter
-heroku addons:add scheduler:standard
+heroku addons:add rediscloud:20
+heroku addons:add mandrill:starter
 ```
 
 Create an appropriate config file. I recommend keeping your config in
@@ -72,15 +71,6 @@ Deploy to heroku and scale up to one process:
 git push heroku master
 heroku ps:scale thresholderbot=1
 ```
-
-And, finally, schedule the report task:
-
-```bash
-heroku addons:open scheduler
-```
-
-Add a new job with `scripts/report.py` as the task, scheduled to run daily (or
-hourly, if you prefer).
 
 
 Verify that it's working

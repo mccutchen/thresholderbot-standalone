@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
+import os
 import sys
 
 import requests
 
 from lib import db
 from lib import log
+from lib import notifications
 from lib import streamer
 from lib import urlwork
 
@@ -39,7 +41,25 @@ def handle_message_with_entities(message):
         else:
             if canonical_url != url:
                 log.info('=> %s', canonical_url)
-            db.add(canonical_url, make_tweet_url(message))
+
+            source = message['user']['id']
+            source_url = make_tweet_url(message)
+            count = db.add(canonical_url, source, source_url)
+
+            if count >= int(os.environ.get('THRESHOLD', 5)):
+                log.info('URL %s seen %d times!', canonical_url, count)
+                handle_thresholded_url(canonical_url)
+            else:
+                log.info('URL %s seen %d times', canonical_url, count)
+
+
+def handle_thresholded_url(url):
+    if not db.is_seen(url):
+        sources = db.get_source_urls(url)
+        if notifications.send_mail(url, sources):
+            db.mark_seen(url)
+    else:
+        log.warn('Skipping already-seen URL %s', url)
 
 
 def make_tweet_url(message):

@@ -1,104 +1,97 @@
-"""
-Records are stored in mongodb in the following format:
-
-    {
-        'url': <url>,
-        'src': <source_url>,
-        'seen': <0 or 1>,
-    }
-
-This module provides a dead-simple interface for inserting/updating records
-and for fetching records over a certain threshold.
-"""
-
+import hashlib
 import os
-import urlparse
+import time
 
-import pymongo
+import redis
 from lib import log
 
 
-def add(url, source_url):
-    """Add a URL to the datastore."""
-    return DB.urls.insert({
-        'url': url,
-        'src': source_url,
-        'seen': 0,
-    })
+def sha1_hash(s):
+    return hashlib.sha1(s).hexdigest()
+
+
+def add(url, source_id, source_url):
+    """Add a URL from a specific source to the datastore. source_id should be
+    the Twitter user ID of a source and source_url should be the URL to the
+    specific tweet where the URL was found.
+
+    Returns the number of times we've seen the URL.
+
+    Under the hood, information about a URL is recorded in a couple of places:
+
+     1. The source_url is stored under a key composed of the sha1 hashes of
+        the source_id and the url. This ensures that we record only the first
+        source of a given URL shared by a given user.
+
+     2. The key from above is added to a set under a key composed of the sha1
+        hash of the url. The size of this set indicates whether a given link
+        is over the threshold. The sort value of the key in the set is the
+        timestamp at which we saw the corresponding URL.
+    """
+    url_hash = sha1_hash(url)
+    source_hash = sha1_hash(str(source_id))
+
+    url_key = 'url:' + url_hash
+    source_key = 'src:{}:{}'.format(source_hash, url_hash)
+    ttl = 60 * 60 * 12
+
+    pipe = DB.pipeline()
+    pipe.setnx(source_key, source_url)
+    pipe.zadd(url_key, source_key, time.time())
+    pipe.zcount(url_key, '-inf', 'inf')
+    pipe.expire(url_key, ttl)
+    source_key_added, url_key_added, url_key_count, _ = pipe.execute()
+
+    if bool(source_key_added) != bool(url_key_added):
+        log.warn('Inconsistent state: %s=%r, %s=%r',
+                 source_key, source_key_added, url_key, url_key_added)
+
+    if not url_key_added:
+        log.info('URL %s from user %s already in datastore', url, source_id)
+
+    return url_key_count
+
+
+def is_seen(url):
+    """Returns a bool indicating whether a notification for the url has been
+    sent out.
+    """
+    return DB.get('seen:' + sha1_hash(url)) is not None
 
 
 def mark_seen(url):
-    """Mark any records matching the given URL as seen."""
-    query = {
-        'url': url,
-        'seen': 0,
-    }
-    update = {
-        '$set': { 'seen': 1, },
-    }
-    return DB.urls.update(query, update, multi=True)
-
-
-def aggregate(threshold):
-    """Fetch a collection of records containing all URLs appearing more than
-    threshold times.
+    """Add a tombstone key for the url to indicate that a notification has
+    been sent.
     """
-    assert isinstance(threshold, int)
+    return DB.set('seen:' + sha1_hash(url), 1)
 
-    results = DB.urls.aggregate([
-        # only match unseen documents
-        { '$match': { 'seen': 0 } },
-        # group by URL, aggregating source URLs and counting occurrences
-        {
-            '$group': {
-                '_id': '$url',
-                'source_urls': {
-                    '$push': '$src',
-                },
-                'count': {
-                    '$sum': 1
-                },
-            },
-        },
-        # only include aggregated docs with a count over the given threshold
-        { '$match': { 'count': { '$gte': threshold } } },
-        # sort by how many occurrences there were
-        { '$sort': { 'count': -1 } },
-    ])
 
-    # Reshape the data for our uses
-    return [{
-        'url': rec['_id'],
-        'count': rec['count'],
-        'source_urls': rec['source_urls']
-    } for rec in results['result']]
+def get_source_urls(url):
+    """Return a list of (source url, timestamp) tuples for each source of the
+    given URL.
+    """
+    url_hash = sha1_hash(url)
+    sources = DB.zrange(url_hash, 0, -1, withscores=1)
+    source_keys = [key for key, _ in sources]
+    source_timestamps = [value for _, value in sources]
+    source_urls = DB.mget(*source_keys)
+    return [(src, ts) for src, ts in zip(source_urls, source_timestamps)]
 
 
 class DB(object):
-    """A proxy wrapper around a mongodb that connects on demand."""
+    """A proxy wrapper around a redis db that connects on demand."""
 
-    _db = None
+    _redis = None
 
     def _connect(self):
-        if self._db is None:
-            mongo_url = os.environ.get('MONGOHQ_URL')
-            if mongo_url:
-                log.info('Connecting to mongodb: %s', mongo_url)
-                conn = pymongo.MongoClient(mongo_url)
-                db = conn[urlparse.urlparse(mongo_url).path[1:]]
-            else:
-                log.info('Connecting to local mongodb...')
-                conn = pymongo.MongoClient()
-                db = conn['thresholderbot']
-
-            if 'urls' not in db.collection_names():
-                db.create_collection('urls')
-
-            self._db = db
-        return self._db
+        if self._redis is None:
+            redis_url = os.getenv('REDISCLOUD_URL', 'redis://localhost:6379')
+            log.info('Connecting to redis: %s', redis_url)
+            self._redis = redis.from_url(redis_url)
+        return self._redis
 
     def __getattr__(self, name):
         self._connect()
-        return getattr(self._db, name)
+        return getattr(self._redis, name)
 
 DB = DB()
