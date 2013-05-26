@@ -37,6 +37,9 @@ def send_mail(url, sources, dry_run=False):
         'to': [{'email': os.environ['TO_ADDRESS']}],
         'subject': 'New link from your thresholderbot',
         'html': body,
+        'auto_text': False,
+        'track_opens': False,
+        'track_clicks': False,
     })
     if resp[0]['status'] != 'sent':
         log.error('Error sending mail: %r', resp)
