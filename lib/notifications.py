@@ -7,6 +7,7 @@ import re
 import mandrill
 import pystache
 
+from lib import db
 from lib import log
 
 
@@ -31,11 +32,13 @@ def send_mail(url, sources, dry_run=False):
         log.warn('Skipping send... Email:\n%s', body)
         return False
 
+    subject = 'New link from your thresholderbot (%s)' % db.sha1_hash(url)[:6]
+
     m = mandrill.Mandrill(os.environ['MANDRILL_APIKEY'])
     resp = m.messages.send({
         'from_email': os.environ['FROM_ADDRESS'],
         'to': [{'email': os.environ['TO_ADDRESS']}],
-        'subject': 'New link from your thresholderbot',
+        'subject': subject,
         'html': body,
         'auto_text': False,
         'track_opens': False,
