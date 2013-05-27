@@ -23,7 +23,7 @@ def send_mail(url, sources, dry_run=False):
             'name': parse_source_name(source_url),
         } for source_url, ts in sources],
     }
-    ctx['sources'][-1]['last'] = 1 # for prettier emails
+    ctx['sources'][-1]['last'] = 1  # for prettier emails
 
     with open('resources/email.html.mustache') as f:
         template = f.read()
@@ -31,8 +31,7 @@ def send_mail(url, sources, dry_run=False):
     body = pystache.render(template, ctx)
 
     if dry_run:
-        log.warn('Skipping send... Email:\n%s', body)
-        return False
+        return body
 
     subject = 'New link from your thresholderbot (%s)' % db.sha1_hash(url)[:6]
 
@@ -89,3 +88,14 @@ def ellipsize(s, m, c=u'\u2026'):
     which defaults to an ellipsis.
     """
     return s if len(s) <= m else s[:(m-1)/2] + c + s[-(m-1)/2:]
+
+
+if __name__ == '__main__':
+    import time
+    url = 'http://thresholderbot.example.com/'
+    sources = []
+    for i in range(5):
+        ts = time.time()
+        source_url = 'https://twitter.com/user{}/status/{}'.format(i, ts)
+        sources.append((source_url, ts))
+    print send_mail(url, sources, dry_run=True)
