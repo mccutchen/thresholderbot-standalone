@@ -33,7 +33,7 @@ def send_mail(url, sources, dry_run=False):
     if dry_run:
         return body
 
-    subject = 'New link from your thresholderbot (%s)' % db.sha1_hash(url)[:6]
+    subject = 'A link from thresholderbot (%s)' % db.sha1_hash(url)[:6]
 
     m = mandrill.Mandrill(os.environ['MANDRILL_APIKEY'])
     resp = m.messages.send({
