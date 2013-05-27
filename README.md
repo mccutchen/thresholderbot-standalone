@@ -1,5 +1,5 @@
-Thresholderbot
-==============
+# Thresholderbot
+
 
 Thresholderbot is a personal software robot that will monitor your Twitter
 timeline and send you daily reports containing links that were shared over
@@ -9,14 +9,12 @@ It's designed as a kind of set-it-and-forget-it service to be deployed for
 free on [Heroku][heroku].
 
 
-Prerequisites
--------------
+## Prerequisites
 
  1. [The Heroku Toolbelt][heroku-toolbelt]
 
 
-Installation
-------------
+## Installation
 
 Installation will hopefully be pretty straightforward. The most complicated
 part will be figuring out the Twitter credentials to use.
@@ -32,9 +30,8 @@ Next, set up the Heroku app:
 
 ```bash
 heroku create
-heroku addons:add mongohq:sandbox
-heroku addons:add mailgun:starter
-heroku addons:add scheduler:standard
+heroku addons:add rediscloud:20
+heroku addons:add mandrill:starter
 ```
 
 Create an appropriate config file. I recommend keeping your config in
@@ -59,6 +56,14 @@ THRESHOLD=5
 TO_ADDRESS=you@yourdomain.com
 ```
 
+**A note on access tokens:** To do its job, Thresholderbot must be granted
+access to your account by way of OAuth tokens issued for a Twitter app
+connected to your account. This is probably the trickiest part configuring
+Thresholderbot. If you have already created a Twitter app, you can go ahead and
+[generate the appropriate credentials][twitter-credentials].
+Otherwise, you'll need to [create a new Twitter app][twitter-apps] first, then
+[generate the appropriate credentials][twitter-credentials].
+
 Push your config out to Heroku:
 
 ```bash
@@ -73,18 +78,8 @@ git push heroku master
 heroku ps:scale thresholderbot=1
 ```
 
-And, finally, schedule the report task:
 
-```bash
-heroku addons:open scheduler
-```
-
-Add a new job with `scripts/report.py` as the task, scheduled to run daily (or
-hourly, if you prefer).
-
-
-Verify that it's working
-------------------------
+## Verify that it's working
 
 Watch the logs for a little while:
 
@@ -93,15 +88,14 @@ heroku logs -t
 ```
 
 
-Local Development/Testing
--------------------------
+## Local Development/Testing
 
 To run a Thresholderbot locally, you'll make sure you have the following
 prerequisites:
 
- 1. [Foreman][foreman] (installed by the Heroku Toolbelt)
+ 1. [foreman][foreman] (installed by the Heroku Toolbelt)
  2. [pip][pip]
- 3. [MongoDB][mongodb]
+ 3. [redis][redis]
 
 Once those are met, running locally should be as simple as:
 
@@ -113,6 +107,8 @@ foreman start
 [heroku]: https://heroku.com/
 [heroku-toolbelt]: https://toolbelt.heroku.com/
 [heroku-config]: https://devcenter.heroku.com/articles/config-vars#local-setup
+[twitter-credentials]: https://dev.twitter.com/docs/auth/tokens-devtwittercom
+[twitter-apps]: https://dev.twitter.com/apps
 [foreman]: https://github.com/ddollar/foreman
 [pip]: http://www.pip-installer.org/
-[mongodb]: http://mongodb.org/
+[redis]: http://redis.io/
