@@ -66,9 +66,8 @@ fi
 echo
 
 echo "Installing required addons..."
-heroku addons:add mongohq:sandbox
+heroku addons:add rediscloud:20
 heroku addons:add mandrill:starter
-heroku addons:add scheduler:standard
 echo
 
 echo "Syncing .env with heroku..."
@@ -81,15 +80,10 @@ echo "Deploying to heroku..."
 git push heroku master
 echo
 
-echo "Finished. There are a couple more manual steps you need to take:"
+echo "Finished. Now either test your config by running locally:"
 echo
-echo " 1. Start your Thresholderbot on Heroku:"
+echo "  $ foreman start"
 echo
-echo "    heroku ps:scale thresholderbot=1"
+echo "or start your thresholderbot in production:"
 echo
-echo " 2. Schedule your reports:"
-echo
-echo "    heroku addons:open scheduler"
-echo
-echo "    Then add a job to run 'scripts/report.py' daily (or hourly, if you prefer)"
-echo
+echo "  $ heroku ps:scale thresholderbot=1"
