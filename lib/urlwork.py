@@ -1,4 +1,5 @@
 import cgi
+import logging
 import re
 import sys
 import urllib
@@ -58,6 +59,28 @@ def exclude_param(url_parts, key, value):
 def resolve(url):
     """Resolve any redirects and return the final URL."""
     return requests.head(url, allow_redirects=True).url
+
+
+def fetch_title(url):
+    """Returns the title for the page at the given URL or, if no title is
+    found, the URL itself.
+    """
+    try:
+        resp = requests.get(url, stream=True)
+        if 'html' in resp.headers.get('Content-Type', ''):
+            for chunk in resp.iter_content(2048, decode_unicode=True):
+                match = re.search(r'(?iLm)<title>([^<]+)', chunk)
+                if match:
+                    return match.group(1)
+                break
+            logging.warn('Title not found in first 2048 bytes of %s', url)
+        else:
+            logging.warn('Skipping title on non-HTML response: %r', resp.headers.get('Content-Type'))
+    except Exception, e:
+        logging.exception('Error fetching title for %s: %s', url, e)
+    finally:
+        resp.close()
+    return url
 
 
 if __name__ == '__main__':

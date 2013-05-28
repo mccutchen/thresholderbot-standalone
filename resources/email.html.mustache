@@ -38,16 +38,39 @@
                 text-decoration: none;
             }
 
-            #thresholder-url {
+            #thresholder-title, #thresholder-url {
                 padding: 0 !important;
             }
-            #thresholder-url a {
+            #thresholder-title a, #thresholder-url a {
+                display: block;
+            }
+            #thresholder-title {
+                margin-bottom: 0;
+            }
+            #thresholder-url {
+                margin-top: 0;
+            }
+            #thresholder-title a {
                 background-color: #2075c7;
                 display: block;
                 font-size: 1.5em;
                 padding: 0.75em 1em;
-                color: #fff;
+                color: #fcf4dc;
                 margin: 0;
+                border-top: 1px solid #205d99;
+                border-bottom: 2px solid #205d99;
+            }
+            #thresholder-url a {
+                border-top: 1px solid #ccbe91;
+                border-bottom: 1px solid #ccbe91;
+                background-color: #e9e2cb;
+                color: #ab985b;
+                display: block;
+                padding: 0.5em 1.5em;
+            }
+            #thresholder-url a span {
+                color: #2075c7;
+                margin-right: 0.5em;
             }
 
             #thresholder-sources {
@@ -87,7 +110,8 @@
                 <p>I saw this link {{count}} times on your Twitter timeline,
                 starting {{start_date}}. I hope it's a good one!</p>
 
-                <p id="thresholder-url"><a href="{{url}}">{{display_url}}</a></p>
+                <p id="thresholder-title"><a href="{{url}}">{{{title}}}</a></p>
+                <p id="thresholder-url"><a href="{{url}}" class="long-url"><span>&#8620;</span> {{url}}</a></p>
 
                 <p>It was shared by</p>
                 <table id="thresholder-sources" cellpadding="0" cellspacing="0">

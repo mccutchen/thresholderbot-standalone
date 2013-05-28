@@ -11,10 +11,10 @@ from lib import db
 from lib import log
 
 
-def send_mail(url, sources, dry_run=False):
+def send_mail(url, sources, title=None, dry_run=False):
     ctx = {
+        'title': title or ellipsize(url, 50),
         'url': url,
-        'display_url': ellipsize(url, 50),
         'start_date': rel_date(sources[0][1]),
         'count': len(sources),
         'sources': [{
@@ -92,10 +92,12 @@ def ellipsize(s, m, c=u'\u2026'):
 
 if __name__ == '__main__':
     import time
-    url = 'http://thresholderbot.example.com/'
+    import urlwork
+    url = 'https://github.com/mccutchen/thresholderbot'
+    title = urlwork.fetch_title(url)
     sources = []
     for i in range(5):
         ts = time.time()
         source_url = 'https://twitter.com/user{}/status/{}'.format(i, ts)
         sources.append((source_url, ts))
-    print send_mail(url, sources, dry_run=True)
+    print send_mail(url, sources, title, dry_run=True).encode('utf8')
