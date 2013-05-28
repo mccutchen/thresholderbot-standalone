@@ -42,11 +42,7 @@ def add(url, source_id, source_url):
     pipe.expire(url_key, ttl)
     source_key_added, url_key_added, url_key_count, _ = pipe.execute()
 
-    if bool(source_key_added) != bool(url_key_added):
-        log.warn('Inconsistent state: %s=%r, %s=%r',
-                 source_key, source_key_added, url_key, url_key_added)
-
-    if not url_key_added:
+    if not source_key_added:
         log.info('URL %s from user %s already in datastore', url, source_id)
 
     return url_key_count
