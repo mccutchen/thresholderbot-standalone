@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import datetime
+import HTMLParser
 import os
 import re
 
 import mandrill
 import pystache
 
-from lib import db
 from lib import log
 
 
@@ -33,7 +33,7 @@ def send_mail(url, sources, title=None, dry_run=False):
     if dry_run:
         return body
 
-    subject = u'Thresholderbot: {}'.format(ctx['title'])
+    subject = unescape(u'Thresholderbot: {}'.format(ctx['title']))
 
     m = mandrill.Mandrill(os.environ['MANDRILL_APIKEY'])
     resp = m.messages.send({
@@ -88,6 +88,10 @@ def ellipsize(s, m, c=u'\u2026'):
     which defaults to an ellipsis.
     """
     return s if len(s) <= m else s[:(m-1)/2] + c + s[-(m-1)/2:]
+
+
+def unescape(s, parser=HTMLParser.HTMLParser()):
+    return parser.unescape(s)
 
 
 if __name__ == '__main__':
