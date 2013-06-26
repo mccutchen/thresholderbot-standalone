@@ -33,13 +33,11 @@ def send_mail(url, sources, title=None, dry_run=False):
     if dry_run:
         return body
 
-    subject = unescape(u'Thresholderbot: {}'.format(ctx['title']))
-
     m = mandrill.Mandrill(os.environ['MANDRILL_APIKEY'])
     resp = m.messages.send({
         'from_email': os.environ['FROM_ADDRESS'],
         'to': [{'email': os.environ['TO_ADDRESS']}],
-        'subject': subject,
+        'subject': unescape(ctx['title']),
         'html': body,
         'inline_css': True,
         'auto_text': False,
