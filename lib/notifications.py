@@ -35,7 +35,7 @@ def send_mail(url, sources, title=None, dry_run=False):
 
     m = mandrill.Mandrill(os.environ['MANDRILL_APIKEY'])
     resp = m.messages.send({
-        'from_email': os.environ['FROM_ADDRESS'],
+        'from_email': os.environ.get('FROM_ADDRESS', 'thresholderbot@mccutch.org'),
         'to': [{'email': os.environ['TO_ADDRESS']}],
         'subject': unescape(ctx['title']),
         'html': body,
