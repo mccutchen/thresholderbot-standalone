@@ -68,6 +68,7 @@ def make_tweet_url(message):
 
 
 def main():
+    log.info('Starting thresholderbot...')
     try:
         for i, message in enumerate(streamer.iter_stream(STREAM_URL)):
             handle_message(message)
