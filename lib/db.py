@@ -40,7 +40,8 @@ def add(url, source_id, source_url):
     pipe.zadd(url_key, source_key, time.time())
     pipe.zcount(url_key, '-inf', 'inf')
     pipe.expire(url_key, ttl)
-    source_key_added, url_key_added, url_key_count, _ = pipe.execute()
+    pipe.expire(source_key, ttl)
+    source_key_added, url_key_added, url_key_count, _, _ = pipe.execute()
 
     if not source_key_added:
         log.info('URL %s from user %s already in datastore', url, source_id)
