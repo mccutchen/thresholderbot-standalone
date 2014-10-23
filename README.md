@@ -3,7 +3,7 @@
 Thresholderbot is a simple app that grew out of this conversation with
 [@mattlemay][mattlemay]:
 
-![](https://raw.github.com/mccutchen/thresholderbot/master/resources/germ-of-an-idea.png)
+![](https://raw.github.com/mccutchen/thresholderbot-standalone/master/resources/germ-of-an-idea.png)
 
 It's a personal software robot that will monitor your Twitter timeline and
 send you an email every time it sees a link more than a certain *threshold*
@@ -12,7 +12,7 @@ Data** of your personal Twitter timeline.
 
 The emails it sends you look like this:
 
-![](https://raw.github.com/mccutchen/thresholderbot/master/resources/thresholderbot-email.png)
+![](https://raw.github.com/mccutchen/thresholderbot-standalone/master/resources/thresholderbot-email.png)
 
 Thresholderbot is designed to be deployed for free on [Heroku][heroku].
 
